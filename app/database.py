@@ -5,7 +5,7 @@ from sqlmodel import Session, SQLModel, create_engine
 
 
 # Define the SQLite database file path.
-sqlite_file_path = Path("data/recipes.db")
+sqlite_file_path = Path("data/recipes.sqlite")
 
 # Build the database URL from the file path.
 DATABASE_URL = f"sqlite:///{sqlite_file_path}"
