@@ -1,16 +1,23 @@
 from sqlmodel import SQLModel
 
 
-# Define the fields the client must send when creating a recipe
+# Represent one ingredient entry inside a recipe.
+class RecipeIngredientBase(SQLModel):
+    name: str
+    quantity: str | None = None
+    unit: str | None = None
+
+
+# Schema for creating a recipe.
 class RecipeCreate(SQLModel):
     title: str
-    ingredients: str
     instructions: str
+    ingredients: list[RecipeIngredientBase]
 
 
-# Define the fields returned by the API when reading a recipe
+# Schema for returning a recipe.
 class RecipeRead(SQLModel):
     id: int
     title: str
-    ingredients: str
     instructions: str
+    ingredients: list[RecipeIngredientBase]
