@@ -75,3 +75,40 @@ def create_recipe(recipe: RecipeCreate, session: SessionDep) -> RecipeRead:
         instructions=db_recipe.instructions,
         ingredients=recipe_ingredients_response,
     )
+
+
+# Get all recipes.
+@app.get("/recipes", response_model=list[RecipeRead])
+def get_recipes(session: SessionDep) -> list[RecipeRead]:
+    recipes = session.exec(select(Recipe)).all()
+    recipe_list: list[RecipeRead] = []
+
+    for recipe in recipes:
+        ingredient_links = session.exec(
+            select(RecipeIngredient).where(RecipeIngredient.recipe_id == recipe.id)
+        ).all()
+
+        ingredients_response: list[RecipeIngredientBase] = []
+
+        for link in ingredient_links:
+            ingredient = session.get(Ingredient, link.ingredient_id)
+
+            if ingredient is not None:
+                ingredients_response.append(
+                    RecipeIngredientBase(
+                        name=ingredient.name,
+                        quantity=link.quantity,
+                        unit=link.unit,
+                    )
+                )
+
+        recipe_list.append(
+            RecipeRead(
+                id=recipe.id,
+                title=recipe.title,
+                instructions=recipe.instructions,
+                ingredients=ingredients_response,
+            )
+        )
+
+    return recipe_list
