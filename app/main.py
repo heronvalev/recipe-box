@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from sqlmodel import Session, select
 
 from app.database import create_db_and_tables, get_session
@@ -134,3 +134,37 @@ def get_recipes(
         )
 
     return recipe_list
+
+
+# Get one recipe by its ID.
+@app.get("/recipes/{recipe_id}", response_model=RecipeRead)
+def get_recipe(recipe_id: int, session: SessionDep) -> RecipeRead:
+    recipe = session.get(Recipe, recipe_id)
+
+    if recipe is None:
+        raise HTTPException(status_code=404, detail="Recipe not found")
+
+    ingredient_links = session.exec(
+        select(RecipeIngredient).where(RecipeIngredient.recipe_id == recipe.id)
+    ).all()
+
+    ingredients_response: list[RecipeIngredientBase] = []
+
+    for link in ingredient_links:
+        db_ingredient = session.get(Ingredient, link.ingredient_id)
+
+        if db_ingredient is not None:
+            ingredients_response.append(
+                RecipeIngredientBase(
+                    name=db_ingredient.name,
+                    quantity=link.quantity,
+                    unit=link.unit,
+                )
+            )
+
+    return RecipeRead(
+        id=recipe.id,
+        title=recipe.title,
+        instructions=recipe.instructions,
+        ingredients=ingredients_response,
+    )
