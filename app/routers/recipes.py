@@ -18,6 +18,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 # Create a new recipe with its ingredients.
 @router.post("/recipes", response_model=RecipeRead)
 def create_recipe(recipe: RecipeCreate, session: SessionDep) -> RecipeRead:
+
     db_recipe = Recipe(title=recipe.title, instructions=recipe.instructions)
     session.add(db_recipe)
     session.commit()
@@ -68,23 +69,27 @@ def get_recipes(
     session: SessionDep,
     ingredient: str | None = None,
 ) -> list[RecipeRead]:
+    
     if ingredient is None:
         recipes = session.exec(select(Recipe)).all()
-    else:
-        matching_ingredient = session.exec(
-            select(Ingredient).where(Ingredient.name == ingredient)
-        ).first()
 
-        if matching_ingredient is None:
+    else:
+        matching_ingredients = session.exec(
+            select(Ingredient).where(Ingredient.name.contains(ingredient))
+        ).all()
+
+        if not matching_ingredients:
             return []
+
+        ingredient_ids = [item.id for item in matching_ingredients]
 
         recipe_links = session.exec(
             select(RecipeIngredient).where(
-                RecipeIngredient.ingredient_id == matching_ingredient.id
+                RecipeIngredient.ingredient_id.in_(ingredient_ids)
             )
         ).all()
 
-        recipe_ids = [link.recipe_id for link in recipe_links]
+        recipe_ids = list({link.recipe_id for link in recipe_links})
         recipes = [session.get(Recipe, recipe_id) for recipe_id in recipe_ids]
         recipes = [recipe for recipe in recipes if recipe is not None]
 
@@ -124,6 +129,7 @@ def get_recipes(
 # Get one recipe by its ID.
 @router.get("/recipes/{recipe_id}", response_model=RecipeRead)
 def get_recipe(recipe_id: int, session: SessionDep) -> RecipeRead:
+
     recipe = session.get(Recipe, recipe_id)
 
     if recipe is None:
