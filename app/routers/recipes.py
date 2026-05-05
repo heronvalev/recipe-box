@@ -11,11 +11,39 @@ from app.schemas import RecipeCreate, RecipeIngredientBase, RecipeRead
 router = APIRouter()
 
 
-# Create a reusable type alias for the database session dependency.
+# Create a reusable type alias for the database session dependency
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-# Create a new recipe with its ingredients.
+# Helper: build a recipe response object with its linked ingredients
+def build_recipe_read(recipe: Recipe, session: Session) -> RecipeRead:
+    ingredient_links = session.exec(
+        select(RecipeIngredient).where(RecipeIngredient.recipe_id == recipe.id)
+    ).all()
+
+    ingredients_response: list[RecipeIngredientBase] = []
+
+    for link in ingredient_links:
+        db_ingredient = session.get(Ingredient, link.ingredient_id)
+
+        if db_ingredient is not None:
+            ingredients_response.append(
+                RecipeIngredientBase(
+                    name=db_ingredient.name,
+                    quantity=link.quantity,
+                    unit=link.unit,
+                )
+            )
+
+    return RecipeRead(
+        id=recipe.id,
+        title=recipe.title,
+        instructions=recipe.instructions,
+        ingredients=ingredients_response,
+    )
+
+
+# Create a new recipe with its ingredients
 @router.post("/recipes", response_model=RecipeRead)
 def create_recipe(recipe: RecipeCreate, session: SessionDep) -> RecipeRead:
 
@@ -63,7 +91,7 @@ def create_recipe(recipe: RecipeCreate, session: SessionDep) -> RecipeRead:
     )
 
 
-# Get all recipes, optionally filtered by ingredient name.
+# Get all recipes, optionally filtered by ingredient name
 @router.get("/recipes", response_model=list[RecipeRead])
 def get_recipes(
     session: SessionDep,
@@ -93,40 +121,10 @@ def get_recipes(
         recipes = [session.get(Recipe, recipe_id) for recipe_id in recipe_ids]
         recipes = [recipe for recipe in recipes if recipe is not None]
 
-    recipe_list: list[RecipeRead] = []
-
-    for recipe in recipes:
-        ingredient_links = session.exec(
-            select(RecipeIngredient).where(RecipeIngredient.recipe_id == recipe.id)
-        ).all()
-
-        ingredients_response: list[RecipeIngredientBase] = []
-
-        for link in ingredient_links:
-            db_ingredient = session.get(Ingredient, link.ingredient_id)
-
-            if db_ingredient is not None:
-                ingredients_response.append(
-                    RecipeIngredientBase(
-                        name=db_ingredient.name,
-                        quantity=link.quantity,
-                        unit=link.unit,
-                    )
-                )
-
-        recipe_list.append(
-            RecipeRead(
-                id=recipe.id,
-                title=recipe.title,
-                instructions=recipe.instructions,
-                ingredients=ingredients_response,
-            )
-        )
-
-    return recipe_list
+    return [build_recipe_read(recipe, session) for recipe in recipes]
 
 
-# Get one recipe by its ID.
+# Get one recipe by its ID
 @router.get("/recipes/{recipe_id}", response_model=RecipeRead)
 def get_recipe(recipe_id: int, session: SessionDep) -> RecipeRead:
 
@@ -135,27 +133,4 @@ def get_recipe(recipe_id: int, session: SessionDep) -> RecipeRead:
     if recipe is None:
         raise HTTPException(status_code=404, detail="Recipe not found")
 
-    ingredient_links = session.exec(
-        select(RecipeIngredient).where(RecipeIngredient.recipe_id == recipe.id)
-    ).all()
-
-    ingredients_response: list[RecipeIngredientBase] = []
-
-    for link in ingredient_links:
-        db_ingredient = session.get(Ingredient, link.ingredient_id)
-
-        if db_ingredient is not None:
-            ingredients_response.append(
-                RecipeIngredientBase(
-                    name=db_ingredient.name,
-                    quantity=link.quantity,
-                    unit=link.unit,
-                )
-            )
-
-    return RecipeRead(
-        id=recipe.id,
-        title=recipe.title,
-        instructions=recipe.instructions,
-        ingredients=ingredients_response,
-    )
+    return build_recipe_read(recipe, session)
