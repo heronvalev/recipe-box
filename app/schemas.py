@@ -56,7 +56,6 @@ class RecipeCreate(SQLModel):
         return value
 
 
-
 # Schema for returning a recipe.
 class RecipeRead(SQLModel):
     id: int
