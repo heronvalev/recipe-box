@@ -159,3 +159,103 @@ def test_delete_recipe():
     get_response = client.get(f"/recipes/{recipe_id}")
 
     assert get_response.status_code == 404
+
+
+def test_get_all_recipes():
+    first_payload = {
+        "title": "Potato soup",
+        "instructions": "Boil potatoes.",
+        "ingredients": [
+            {
+                "name": "potato",
+                "quantity": "2",
+                "unit": None,
+            }
+        ],
+    }
+
+    second_payload = {
+        "title": "Tomato pasta",
+        "instructions": "Cook pasta with tomato sauce.",
+        "ingredients": [
+            {
+                "name": "tomato",
+                "quantity": "3",
+                "unit": None,
+            }
+        ],
+    }
+
+    client.post("/recipes", json=first_payload)
+    client.post("/recipes", json=second_payload)
+
+    response = client.get("/recipes")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert isinstance(data, list)
+    assert len(data) == 2
+
+    recipe_titles = [recipe["title"] for recipe in data]
+
+    assert "Potato soup" in recipe_titles
+    assert "Tomato pasta" in recipe_titles
+
+
+def test_get_recipes_filtered_by_ingredient():
+    potato_payload = {
+        "title": "Potato soup",
+        "instructions": "Boil potatoes.",
+        "ingredients": [
+            {
+                "name": "potato",
+                "quantity": "2",
+                "unit": None,
+            }
+        ],
+    }
+
+    tomato_payload = {
+        "title": "Tomato pasta",
+        "instructions": "Cook pasta with tomato sauce.",
+        "ingredients": [
+            {
+                "name": "tomato",
+                "quantity": "3",
+                "unit": None,
+            }
+        ],
+    }
+
+    client.post("/recipes", json=potato_payload)
+    client.post("/recipes", json=tomato_payload)
+
+    response = client.get("/recipes?ingredient=potato")
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 1
+    assert data[0]["title"] == "Potato soup"
+    assert data[0]["ingredients"][0]["name"] == "potato"
+
+
+def test_create_recipe_rejects_blank_title():
+    payload = {
+        "title": "   ",
+        "instructions": "Boil potatoes.",
+        "ingredients": [
+            {
+                "name": "potato",
+                "quantity": "2",
+                "unit": None,
+            }
+        ],
+    }
+
+    response = client.post("/recipes", json=payload)
+
+    assert response.status_code == 422
