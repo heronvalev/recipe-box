@@ -134,3 +134,28 @@ def test_update_recipe():
     assert data["instructions"] == "Boil vegetables and blend."
     assert data["ingredients"][0]["name"] == "potato"
     assert data["ingredients"][0]["quantity"] == "3"
+
+
+def test_delete_recipe():
+    payload = {
+        "title": "Recipe to delete",
+        "instructions": "This recipe will be deleted.",
+        "ingredients": [
+            {
+                "name": "potato",
+                "quantity": "1",
+                "unit": None,
+            }
+        ],
+    }
+
+    create_response = client.post("/recipes", json=payload)
+    recipe_id = create_response.json()["id"]
+
+    delete_response = client.delete(f"/recipes/{recipe_id}")
+
+    assert delete_response.status_code == 204
+
+    get_response = client.get(f"/recipes/{recipe_id}")
+
+    assert get_response.status_code == 404
