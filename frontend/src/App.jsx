@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import './App.css'
+import RecipeCard from './components/RecipeCard'
 
 function App() {
   const [recipes, setRecipes] = useState([])
@@ -29,9 +30,9 @@ function App() {
       {errorMessage && <p>{errorMessage}</p>}
 
       {!isLoading && !errorMessage && (
-        <ul>
+        <ul className="recipe-list">
           {recipes.map((recipe) => (
-            <li key={recipe.id}>{recipe.title}</li>
+            <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </ul>
       )}

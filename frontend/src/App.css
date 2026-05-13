@@ -13,3 +13,24 @@
   margin: 0;
   color: #555;
 }
+
+/* Recipe cards in a vertical list without default bullet styling. */
+.recipe-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 2rem;
+}
+
+/* Recipe card container. */
+.recipe-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: white;
+}
+
+/* Recipe titles */
+.recipe-card h2 {
+  margin-top: 0;
+}
