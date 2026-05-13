@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import RecipeCard from './components/RecipeCard'
+import RecipeForm from './components/RecipeForm'
 
 function App() {
   const [recipes, setRecipes] = useState([])
@@ -24,6 +25,8 @@ function App() {
     <main className="app">
       <h1>Recipe Box</h1>
       <p>A simple frontend for managing recipes.</p>
+
+      <RecipeForm />
 
       {isLoading && <p>Loading recipes...</p>}
 
