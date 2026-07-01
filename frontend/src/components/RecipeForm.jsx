@@ -4,24 +4,68 @@ import { useState } from 'react'
 function RecipeForm() {
   const [title, setTitle] = useState('')
   const [instructions, setInstructions] = useState('')
-  const [ingredientName, setIngredientName] = useState('')
-  const [ingredientQuantity, setIngredientQuantity] = useState('')
-  const [ingredientUnit, setIngredientUnit] = useState('')
+  const [ingredients, setIngredients] = useState([
+    {
+      name: '',
+      quantity: '',
+      unit: '',
+    },
+  ])
 
-  function handleSubmit(event) {
+  function handleIngredientChange(index, field, value) {
+    const updatedIngredients = ingredients.map((ingredient, ingredientIndex) => {
+      if (ingredientIndex === index) {
+        return {
+          ...ingredient,
+          [field]: value,
+        }
+      }
+
+      return ingredient
+    })
+
+    setIngredients(updatedIngredients)
+  }
+
+  function handleAddIngredient() {
+    setIngredients([
+      ...ingredients,
+      {
+        name: '',
+        quantity: '',
+        unit: '',
+      },
+    ])
+  }
+
+  async function handleSubmit(event) {
     event.preventDefault()
 
-    console.log({
+    const newRecipe = {
       title: title,
       instructions: instructions,
-      ingredients: [
-        {
-          name: ingredientName,
-          quantity: ingredientQuantity,
-          unit: ingredientUnit,
+      ingredients: ingredients,
+    }
+
+    try {
+      const response = await fetch('http://127.0.0.1:8000/recipes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      ],
-    })
+        body: JSON.stringify(newRecipe),
+      })
+
+      if (!response.ok) {
+        throw new Error('Could not create recipe.')
+      }
+
+      const createdRecipe = await response.json()
+
+      console.log(createdRecipe)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
@@ -48,38 +92,54 @@ function RecipeForm() {
       </div>
 
       <fieldset>
-        <legend>Ingredient</legend>
+        <legend>Ingredients</legend>
 
-        <div>
-          <label htmlFor="ingredient-name">Name</label>
-          <input
-            id="ingredient-name"
-            type="text"
-            value={ingredientName}
-            onChange={(event) => setIngredientName(event.target.value)}
-          />
-        </div>
+        {ingredients.map((ingredient, index) => (
+          <div key={index}>
+            <div>
+              <label htmlFor={`ingredient-name-${index}`}>Name</label>
+              <input
+                id={`ingredient-name-${index}`}
+                type="text"
+                value={ingredient.name}
+                onChange={(event) =>
+                  handleIngredientChange(index, 'name', event.target.value)
+                }
+              />
+            </div>
 
-        <div>
-          <label htmlFor="ingredient-quantity">Quantity</label>
-          <input
-            id="ingredient-quantity"
-            type="text"
-            value={ingredientQuantity}
-            onChange={(event) => setIngredientQuantity(event.target.value)}
-          />
-        </div>
+            <div>
+              <label htmlFor={`ingredient-quantity-${index}`}>
+                Quantity
+              </label>
+              <input
+                id={`ingredient-quantity-${index}`}
+                type="text"
+                value={ingredient.quantity}
+                onChange={(event) =>
+                  handleIngredientChange(index, 'quantity', event.target.value)
+                }
+              />
+            </div>
 
-        <div>
-          <label htmlFor="ingredient-unit">Unit</label>
-          <input
-            id="ingredient-unit"
-            type="text"
-            value={ingredientUnit}
-            onChange={(event) => setIngredientUnit(event.target.value)}
-          />
-        </div>
+            <div>
+              <label htmlFor={`ingredient-unit-${index}`}>Unit</label>
+              <input
+                id={`ingredient-unit-${index}`}
+                type="text"
+                value={ingredient.unit}
+                onChange={(event) =>
+                  handleIngredientChange(index, 'unit', event.target.value)
+                }
+              />
+            </div>
+          </div>
+        ))}
       </fieldset>
+
+      <button type="button" onClick={handleAddIngredient}>
+        Add another ingredient
+      </button>
 
       <button type="submit">Add recipe</button>
     </form>
