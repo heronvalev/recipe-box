@@ -8,7 +8,10 @@ function App() {
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
 
-  useEffect(() => {
+  function fetchRecipes() {
+    setIsLoading(true)
+    setErrorMessage('')
+
     fetch('http://127.0.0.1:8000/recipes')
       .then((response) => response.json())
       .then((data) => {
@@ -19,6 +22,10 @@ function App() {
         setErrorMessage('Could not load recipes.')
         setIsLoading(false)
       })
+  }
+
+  useEffect(() => {
+    fetchRecipes()
   }, [])
 
   return (
@@ -26,7 +33,7 @@ function App() {
       <h1>Recipe Box</h1>
       <p>A simple frontend for managing recipes.</p>
 
-      <RecipeForm />
+      <RecipeForm onRecipeCreated={fetchRecipes} />
 
       {isLoading && <p>Loading recipes...</p>}
 

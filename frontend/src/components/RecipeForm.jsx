@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 // Display a form for creating a new recipe.
-function RecipeForm() {
+function RecipeForm({ onRecipeCreated }) {
   const [title, setTitle] = useState('')
   const [instructions, setInstructions] = useState('')
   const [ingredients, setIngredients] = useState([
@@ -63,6 +63,8 @@ function RecipeForm() {
       const createdRecipe = await response.json()
 
       console.log(createdRecipe)
+
+      onRecipeCreated()
     } catch (error) {
       console.error(error)
     }
