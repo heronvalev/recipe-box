@@ -38,6 +38,18 @@ function RecipeForm({ onRecipeCreated }) {
     ])
   }
 
+  function resetForm() {
+    setTitle('')
+    setInstructions('')
+    setIngredients([
+      {
+        name: '',
+        quantity: '',
+        unit: '',
+      },
+    ])
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
 
@@ -65,6 +77,7 @@ function RecipeForm({ onRecipeCreated }) {
       console.log(createdRecipe)
 
       onRecipeCreated()
+      resetForm()
     } catch (error) {
       console.error(error)
     }
