@@ -42,7 +42,11 @@ function App() {
       {!isLoading && !errorMessage && (
         <ul className="recipe-list">
           {recipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              onRecipeDeleted={fetchRecipes}
+            />
           ))}
         </ul>
       )}
