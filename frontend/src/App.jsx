@@ -7,14 +7,15 @@ function App() {
   const [recipes, setRecipes] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
-  const [ingredientFilter, setIngredientFilter] = useState('')
+  const [ingredientFilterInput, setIngredientFilterInput] = useState('')
+  const [activeIngredientFilter, setActiveIngredientFilter] = useState('')
 
   function fetchRecipes() {
     setIsLoading(true)
     setErrorMessage('')
 
     let url = 'http://127.0.0.1:8000/recipes'
-    const cleanedIngredientFilter = ingredientFilter.trim()
+    const cleanedIngredientFilter = activeIngredientFilter.trim()
 
     if (cleanedIngredientFilter) {
       url = `http://127.0.0.1:8000/recipes?ingredient=${encodeURIComponent(cleanedIngredientFilter)}`
@@ -32,9 +33,18 @@ function App() {
       })
   }
 
+  function handleSearch() {
+    setActiveIngredientFilter(ingredientFilterInput)
+  }
+
+  function handleClearFilter() {
+    setIngredientFilterInput('')
+    setActiveIngredientFilter('')
+  }
+
   useEffect(() => {
     fetchRecipes()
-  }, [])
+  }, [activeIngredientFilter])
 
   return (
     <main className="app">
@@ -44,16 +54,24 @@ function App() {
       <RecipeForm onRecipeCreated={fetchRecipes} />
 
       <div>
+        
         <label htmlFor="ingredient-filter">Filter by ingredient</label>
+
         <input
           id="ingredient-filter"
           type="text"
-          value={ingredientFilter}
-          onChange={(event) => setIngredientFilter(event.target.value)}
+          value={ingredientFilterInput}
+          onChange={(event) => setIngredientFilterInput(event.target.value)}
         />
-        <button type="button" onClick={fetchRecipes}>
+
+        <button type="button" onClick={handleSearch}>
           Search
         </button>
+
+        <button type="button" onClick={handleClearFilter}>
+          Clear
+        </button>
+
       </div>
 
       {isLoading && <p>Loading recipes...</p>}
