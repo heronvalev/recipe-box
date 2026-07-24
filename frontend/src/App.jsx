@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import './App.css'
 import RecipeCard from './components/RecipeCard'
 import RecipeForm from './components/RecipeForm'
@@ -10,7 +10,7 @@ function App() {
   const [ingredientFilterInput, setIngredientFilterInput] = useState('')
   const [activeIngredientFilter, setActiveIngredientFilter] = useState('')
 
-  function fetchRecipes() {
+  const fetchRecipes = useCallback(() => {
     setIsLoading(true)
     setErrorMessage('')
 
@@ -31,7 +31,7 @@ function App() {
         setErrorMessage('Could not load recipes.')
         setIsLoading(false)
       })
-  }
+  }, [activeIngredientFilter])
 
   function handleSearch() {
     setActiveIngredientFilter(ingredientFilterInput)
@@ -44,7 +44,7 @@ function App() {
 
   useEffect(() => {
     fetchRecipes()
-  }, [activeIngredientFilter])
+  }, [fetchRecipes])
 
   return (
     <main className="app">
@@ -54,7 +54,6 @@ function App() {
       <RecipeForm onRecipeCreated={fetchRecipes} />
 
       <div>
-        
         <label htmlFor="ingredient-filter">Filter by ingredient</label>
 
         <input
@@ -71,7 +70,6 @@ function App() {
         <button type="button" onClick={handleClearFilter}>
           Clear
         </button>
-
       </div>
 
       {isLoading && <p>Loading recipes...</p>}
