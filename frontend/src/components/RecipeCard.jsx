@@ -1,5 +1,10 @@
+import { useState } from 'react'
+import RecipeEditForm from './RecipeEditForm'
+
 // Display the details for a single recipe.
 function RecipeCard({ recipe, onRecipeDeleted }) {
+  const [isEditing, setIsEditing] = useState(false)
+
   async function handleDelete() {
     try {
       const response = await fetch(
@@ -45,7 +50,18 @@ function RecipeCard({ recipe, onRecipeDeleted }) {
       <button type="button" onClick={handleDelete}>
         Delete recipe
       </button>
+
+      <button type="button" onClick={() => setIsEditing(true)}>
+        Edit recipe
+      </button>
       
+      {isEditing && (
+        <RecipeEditForm
+          recipe={recipe}
+          onRecipeUpdated={onRecipeDeleted}
+          onCancel={() => setIsEditing(false)}
+        />
+      )}
     </li>
   )
 }
