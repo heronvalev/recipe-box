@@ -2,7 +2,7 @@ import { useState } from 'react'
 import RecipeEditForm from './RecipeEditForm'
 
 // Display the details for a single recipe.
-function RecipeCard({ recipe, onRecipeDeleted }) {
+function RecipeCard({ recipe, onRecipesChanged }) {
   const [isEditing, setIsEditing] = useState(false)
 
   async function handleDelete() {
@@ -18,7 +18,7 @@ function RecipeCard({ recipe, onRecipeDeleted }) {
         throw new Error('Could not delete recipe.')
       }
 
-      onRecipeDeleted()
+      onRecipesChanged()
     } catch (error) {
       console.error(error)
     }
@@ -58,7 +58,7 @@ function RecipeCard({ recipe, onRecipeDeleted }) {
       {isEditing && (
         <RecipeEditForm
           recipe={recipe}
-          onRecipeUpdated={onRecipeDeleted}
+          onRecipeUpdated={onRecipesChanged}
           onCancel={() => setIsEditing(false)}
         />
       )}

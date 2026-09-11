@@ -82,7 +82,7 @@ function App() {
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
-              onRecipeDeleted={fetchRecipes}
+              onRecipesChanged={fetchRecipes}
             />
           ))}
         </ul>
