@@ -20,8 +20,40 @@ function RecipeEditForm({ recipe, onRecipeUpdated, onCancel }) {
 		setIngredients(updatedIngredients)
 	}
 
+	async function handleSubmit(event) {
+		event.preventDefault()
+
+		const updatedRecipe = {
+			title: title,
+			instructions: instructions,
+			ingredients: ingredients,
+		}
+
+		try {
+			const response = await fetch(
+				`http://127.0.0.1:8000/recipes/${recipe.id}`,
+				{
+					method: 'PUT',
+					headers: {
+					'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(updatedRecipe),
+				}
+			)
+
+			if (!response.ok) {
+			throw new Error('Could not update recipe.')
+			}
+
+			onRecipeUpdated()
+			onCancel()
+		} catch (error) {
+			console.error(error)
+		}
+	}
+
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <h3>Edit recipe</h3>
 
       <div>
