@@ -20,6 +20,29 @@ function RecipeEditForm({ recipe, onRecipeUpdated, onCancel }) {
 		setIngredients(updatedIngredients)
 	}
 
+	function handleAddIngredient() {
+		setIngredients([
+			...ingredients,
+			{
+			name: '',
+			quantity: '',
+			unit: '',
+			},
+		])
+	}
+
+	function handleRemoveIngredient(indexToRemove) {
+		if (ingredients.length <= 1) {
+			return
+		}
+
+		const updatedIngredients = ingredients.filter((ingredient, ingredientIndex) => {
+			return ingredientIndex !== indexToRemove
+		})
+
+		setIngredients(updatedIngredients)
+	}
+
 	async function handleSubmit(event) {
 		event.preventDefault()
 
@@ -79,7 +102,18 @@ function RecipeEditForm({ recipe, onRecipeUpdated, onCancel }) {
 				<legend>Ingredients</legend>
 
 				{ingredients.map((ingredient, index) => (
-					<div key={index}>
+					<div key={index} className="ingredient-edit-card">
+
+						<button
+							type="button"
+							className="remove-ingredient-button"
+							onClick={() => handleRemoveIngredient(index)}
+							disabled={ingredients.length <= 1}
+							aria-label={`Remove ingredient ${index + 1}`}
+						>
+							×
+						</button>
+
 						<div>
 							<label htmlFor={`edit-ingredient-name-${recipe.id}-${index}`}>
 								Name
@@ -124,6 +158,10 @@ function RecipeEditForm({ recipe, onRecipeUpdated, onCancel }) {
 					</div>
 				))}
 			</fieldset>
+		
+		<button type="button" onClick={handleAddIngredient}>
+			Add another ingredient
+		</button>	
 
       <button type="submit">Save changes</button>
 
